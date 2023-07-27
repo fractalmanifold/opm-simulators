@@ -31,6 +31,7 @@
 #include <opm/simulators/wells/WellBhpThpCalculator.hpp>
 #include <opm/simulators/wells/WellConvergence.hpp>
 
+#include <opm/ml/keras_model.hpp>
 #include <fmt/format.h>
 
 #include <algorithm>
@@ -233,6 +234,15 @@ namespace Opm
                     PerforationRates& perf_rates,
                     DeferredLogger& deferred_logger) const
     {
+      KerasModel model;
+      model.LoadModel("../../../opmcemracs/opm-common/opm/material/fluidmatrixinteractions/ml_tools/example.modelVGkrw");
+      Tensor in{1};
+      const Evaluation Sw = 1.0;
+      in.data_ = {Sw};
+      // Run prediction.
+      Tensor out;
+      model.Apply(&in, &out);
+      std::cout << out.data_[0].value() << std::endl;
         // Pressure drawdown (also used to determine direction of flow)
         const Value well_pressure = bhp + this->connections_.pressure_diff(perf);
         Value drawdown = pressure - well_pressure;

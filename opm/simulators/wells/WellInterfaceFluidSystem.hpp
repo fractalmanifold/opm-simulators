@@ -72,7 +72,8 @@ protected:
                              const int num_components,
                              const int num_phases,
                              const int index_of_well,
-                             const std::vector<PerforationData>& perf_data);
+                             const std::vector<PerforationData>& perf_data,
+                             const std::string& ml_wi_filename);
 
     // updating the voidage rates in well_state when requested
     void calculateReservoirRates(SingleWellState& ws) const;

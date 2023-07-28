@@ -56,7 +56,8 @@ namespace Opm
                                                          num_components,
                                                          num_phases,
                                                          index_of_well,
-                                                         perf_data)
+                                                         perf_data,
+                                                         param.ml_wi_file_)
       , param_(param)
     {
         connectionRates_.resize(this->number_of_perforations_);

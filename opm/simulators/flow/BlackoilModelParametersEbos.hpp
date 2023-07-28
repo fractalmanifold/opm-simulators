@@ -41,6 +41,12 @@ template<class TypeTag, class MyTypeTag>
 struct EclDeckFileName {
     using type = UndefinedProperty;
 };
+
+template<class TypeTag, class MyTypeTag>
+struct MlWiFilename {
+    using type = UndefinedProperty;
+};
+
 template<class TypeTag, class MyTypeTag>
 struct DbhpMaxRel {
     using type = UndefinedProperty;
@@ -380,6 +386,10 @@ struct NonlinearSolver<TypeTag, TTag::FlowModelParameters> {
     static constexpr auto value = "newton";
 };
 template<class TypeTag>
+struct MlWiFilename<TypeTag, TTag::FlowModelParameters> {
+    static constexpr auto value = "none";
+};
+template<class TypeTag>
 struct LocalSolveApproach<TypeTag, TTag::FlowModelParameters> {
     static constexpr auto value = "jacobi";
 };
@@ -551,6 +561,8 @@ namespace Opm
         std::string local_domain_partition_method_;
         DomainOrderingMeasure local_domain_ordering_{DomainOrderingMeasure::AveragePressure};
 
+        std::string ml_wi_file_;
+
         /// Construct from user parameters or defaults.
         BlackoilModelParametersEbos()
         {
@@ -613,6 +625,7 @@ namespace Opm
             } else {
                 throw std::runtime_error("Invalid domain ordering '" + measure + "' specified.");
             }
+            ml_wi_file_ = EWOMS_GET_PARAM(TypeTag, std::string, MlWiFilename);
         }
 
         static void registerParameters()
@@ -655,6 +668,7 @@ namespace Opm
             EWOMS_REGISTER_PARAM(TypeTag, int, NetworkMaxIterations, "Maximum number of iterations in the network solver before giving up");
             EWOMS_REGISTER_PARAM(TypeTag, std::string, NonlinearSolver, "Choose nonlinear solver. Valid choices are newton or nldd.");
             EWOMS_REGISTER_PARAM(TypeTag, std::string, LocalSolveApproach, "Choose local solve approach. Valid choices are jacobi and gauss-seidel");
+            EWOMS_REGISTER_PARAM(TypeTag, std::string, MlWiFilename, "Path to WI ML file. Default is empty which will use Peaceman");
             EWOMS_REGISTER_PARAM(TypeTag, int, MaxLocalSolveIterations, "Max iterations for local solves with NLDD nonlinear solver.");
             EWOMS_REGISTER_PARAM(TypeTag, Scalar, LocalToleranceScalingMb, "Set lower than 1.0 to use stricter convergence tolerance for local solves.");
             EWOMS_REGISTER_PARAM(TypeTag, Scalar, LocalToleranceScalingCnv, "Set lower than 1.0 to use stricter convergence tolerance for local solves.");

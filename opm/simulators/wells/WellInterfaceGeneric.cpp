@@ -62,7 +62,8 @@ WellInterfaceGeneric::WellInterfaceGeneric(const Well& well,
                                            const int num_components,
                                            const int num_phases,
                                            const int index_of_well,
-                                           const std::vector<PerforationData>& perf_data)
+                                           const std::vector<PerforationData>& perf_data,
+                                           const std::string& ml_wi_filename)
       : well_ecl_(well)
       , parallel_well_info_(pw_info)
       , current_step_(time_step)
@@ -73,6 +74,7 @@ WellInterfaceGeneric::WellInterfaceGeneric(const Well& well,
       , perf_data_(&perf_data)
       , ipr_a_(num_components)
       , ipr_b_(num_components)
+      , ml_wi_filename_(ml_wi_filename)
 {
     assert(well.name()==pw_info.name());
     assert(std::is_sorted(perf_data.begin(), perf_data.end(),
@@ -144,7 +146,7 @@ void WellInterfaceGeneric::adaptRatesForVFP(std::vector<double>& rates) const
 
 double WellInterfaceGeneric::wellIndex(const int perf) const {
     KerasModel model;
-    model.LoadModel("../../../opmcemracs/opm-common/opm/material/fluidmatrixinteractions/ml_tools/example.modelVGkrw");
+    model.LoadModel(ml_wi_filename_);
     Tensor in{1};
     const Evaluation Sw = 1.0;
     in.data_ = {Sw};

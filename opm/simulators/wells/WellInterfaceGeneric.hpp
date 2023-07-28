@@ -57,7 +57,8 @@ public:
                          const int num_components,
                          const int num_phases,
                          const int index_of_well,
-                         const std::vector<PerforationData>& perf_data);
+                         const std::vector<PerforationData>& perf_data,
+                         const std::string& ml_wi_filename);
 
     /// \brief Get the perforations of the well
     const std::vector<PerforationData>& perforationData() const;
@@ -384,6 +385,8 @@ protected:
     std::vector< std::string> well_control_log_;
 
     bool changed_to_open_this_step_ = true;
+
+    std::string ml_wi_filename_;
 };
 
 }

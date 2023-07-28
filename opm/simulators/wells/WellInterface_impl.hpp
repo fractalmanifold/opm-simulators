@@ -1121,13 +1121,13 @@ namespace Opm
         double total_tw = 0;
         const int nperf = this->number_of_perforations_;
         for (int perf = 0; perf < nperf; ++perf) {
-            total_tw += this->well_index_[perf];
+            total_tw += this->wellIndex(perf);
         }
         for (int perf = 0; perf < nperf; ++perf) {
             const int cell_idx = this->well_cells_[perf];
             const auto& intQuants = ebosSimulator.model().intensiveQuantities(cell_idx, /*timeIdx=*/0);
             const auto& fs = intQuants.fluidState();
-            const double well_tw_fraction = this->well_index_[perf] / total_tw;
+            const double well_tw_fraction = this->wellIndex(perf) / total_tw;
             double total_mobility = 0.0;
             for (int p = 0; p < np; ++p) {
                 int ebosPhaseIdx = this->flowPhaseToEbosPhaseIdx(p);

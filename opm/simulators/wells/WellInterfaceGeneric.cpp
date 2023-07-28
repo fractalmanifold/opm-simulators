@@ -32,6 +32,9 @@
 #include <opm/input/eclipse/Schedule/Well/WellPolymerProperties.hpp>
 #include <opm/input/eclipse/Schedule/Well/WellTestState.hpp>
 #include <opm/input/eclipse/Schedule/Well/WVFPEXP.hpp>
+
+#include <opm/ml/keras_model.hpp>
+
 #include <opm/simulators/utils/DeferredLoggingErrorHelpers.hpp>
 #include <opm/simulators/wells/PerforationData.hpp>
 #include <opm/simulators/wells/ParallelWellInfo.hpp>
@@ -94,7 +97,7 @@ WellInterfaceGeneric::WellInterfaceGeneric(const Well& well,
         int perf = 0;
         for (const auto& pd : perf_data) {
             well_cells_[perf] = pd.cell_index;
-            well_index_[perf] = pd.connection_transmissibility_factor;
+            this->well_index_[perf] = pd.connection_transmissibility_factor;
             saturation_table_number_[perf] = pd.satnum_id;
             ++perf;
         }
@@ -137,6 +140,22 @@ void WellInterfaceGeneric::adaptRatesForVFP(std::vector<double>& rates) const
                                    "supported for oil and water");
         }
     }
+}
+
+double WellInterfaceGeneric::wellIndex(const int perf) const {
+    KerasModel model;
+    model.LoadModel("../../../opmcemracs/opm-common/opm/material/fluidmatrixinteractions/ml_tools/example.modelVGkrw");
+    Tensor in{1};
+    const Evaluation Sw = 1.0;
+    in.data_ = {Sw};
+    // Run prediction.
+    Tensor out;
+    model.Apply(&in, &out);
+    std::cout << out.data_[0].value() << std::endl;
+    const auto& connection = well_ecl_.getConnections()[perf];
+    std::cout << connection.re() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh() << std::endl;
+    return connection.CF();
+    //return this->wellIndex(perf);
 }
 
 const std::vector<PerforationData>& WellInterfaceGeneric::perforationData() const

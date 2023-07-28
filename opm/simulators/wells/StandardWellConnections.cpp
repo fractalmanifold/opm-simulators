@@ -464,7 +464,7 @@ computeProperties(const WellState& well_state,
     if (all_zero && well_.isProducer()) {
         double total_tw = 0;
         for (int perf = 0; perf < nperf; ++perf) {
-            total_tw += well_.wellIndex()[perf];
+            total_tw += well_.wellIndex(perf);
         }
         if (comm.size() > 1)
         {
@@ -475,7 +475,7 @@ computeProperties(const WellState& well_state,
         // and weight the perforation rates using the well transmissibility.
         for (int perf = 0; perf < nperf; ++perf) {
             const int cell_idx = well_.cells()[perf];
-            const double well_tw_fraction = well_.wellIndex()[perf] / total_tw;
+            const double well_tw_fraction = well_.wellIndex(perf) / total_tw;
             double total_mobility = 0.0;
             double total_invB = 0.;
             for (int p = 0; p < np; ++p) {

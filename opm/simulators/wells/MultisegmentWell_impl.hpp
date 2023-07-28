@@ -347,7 +347,7 @@ namespace Opm
                 std::vector<Scalar> mob(this->num_components_, 0.);
                 getMobility(ebosSimulator, perf, mob, deferred_logger);
                 double trans_mult = ebosSimulator.problem().template rockCompTransMultiplier<double>(intQuants, cell_idx);
-                const double Tw = this->well_index_[perf] * trans_mult;
+                const double Tw = this->wellIndex(perf) * trans_mult;
 
                 const Scalar seg_pressure = segment_pressure[seg];
                 std::vector<Scalar> cq_s(this->num_components_, 0.);
@@ -1179,7 +1179,7 @@ namespace Opm
                 }
 
                 // the well index associated with the connection
-                const double tw_perf = this->well_index_[perf]*ebos_simulator.problem().template rockCompTransMultiplier<double>(int_quantities, cell_idx);
+                const double tw_perf = this->wellIndex(perf)*ebos_simulator.problem().template rockCompTransMultiplier<double>(int_quantities, cell_idx);
 
                 std::vector<double> ipr_a_perf(this->ipr_a_.size());
                 std::vector<double> ipr_b_perf(this->ipr_b_.size());
@@ -1507,7 +1507,7 @@ namespace Opm
                 std::vector<EvalWell> mob(this->num_components_, 0.0);
                 getMobility(ebosSimulator, perf, mob, deferred_logger);
                 const double trans_mult = ebosSimulator.problem().template rockCompTransMultiplier<double>(int_quants, cell_idx);
-                const double Tw = this->well_index_[perf] * trans_mult;
+                const double Tw = this->wellIndex(perf) * trans_mult;
                 std::vector<EvalWell> cq_s(this->num_components_, 0.0);
                 EvalWell perf_press;
                 PerforationRates perfRates;
@@ -1819,7 +1819,7 @@ namespace Opm
                 std::vector<Scalar> mob(this->num_components_, 0.0);
                 getMobility(ebosSimulator, perf, mob, deferred_logger);
                 const double trans_mult = ebosSimulator.problem().template rockCompTransMultiplier<double>(int_quants, cell_idx);
-                const double Tw = this->well_index_[perf] * trans_mult;
+                const double Tw = this->wellIndex(perf) * trans_mult;
                 std::vector<Scalar> cq_s(this->num_components_, 0.0);
                 Scalar perf_press = 0.0;
                 PerforationRates perf_rates;

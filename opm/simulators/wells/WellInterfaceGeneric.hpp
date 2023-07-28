@@ -166,9 +166,7 @@ public:
         return perf_depth_;
     }
 
-    const std::vector<double>& wellIndex() const {
-        return well_index_;
-    }
+    double wellIndex(const int perf) const;
 
     const std::map<int,std::vector<int>>& getCompletions() const {
         return completions_;

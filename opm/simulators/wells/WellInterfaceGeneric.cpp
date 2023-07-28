@@ -147,15 +147,24 @@ void WellInterfaceGeneric::adaptRatesForVFP(std::vector<double>& rates) const
 double WellInterfaceGeneric::wellIndex(const int perf) const {
     KerasModel model;
     model.LoadModel(ml_wi_filename_);
-    Tensor in{1};
-    const Evaluation Sw = 1.0;
-    in.data_ = {Sw};
+    Tensor in{4};
+    const auto& connection = well_ecl_.getConnections()[perf];
+
+    const Evaluation K = connection.Kh()/connection.connectionLength();
+    const Evaluation h = connection.connectionLength();
+    const Evaluation re = connection.re();
+    const Evaluation rw = connection.rw();
+    in.data_ = {{h, K, re, rw}};
     // Run prediction.
     Tensor out;
     model.Apply(&in, &out);
-    std::cout << out.data_[0].value() << std::endl;
-    const auto& connection = well_ecl_.getConnections()[perf];
-    std::cout << connection.re() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh() << std::endl;
+    out.Print();
+    std::cout << out.data_.size() << std::endl;
+    //for (int i = 0; i < 4; ++i) {
+    //    std::cout << out.data_[i].value() << std::endl;
+    //}
+    //std::cout << connection.re() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh()/connection.connectionLength() << std::endl;
+    std::cout << out.data_[0].value() <<  " " << connection.CF() << std::endl;;
     return connection.CF();
     //return this->wellIndex(perf);
 }

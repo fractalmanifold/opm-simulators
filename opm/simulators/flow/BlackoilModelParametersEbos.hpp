@@ -387,7 +387,7 @@ struct NonlinearSolver<TypeTag, TTag::FlowModelParameters> {
 };
 template<class TypeTag>
 struct MlWiFilename<TypeTag, TTag::FlowModelParameters> {
-    static constexpr auto value = "none";
+    static constexpr auto value = "";
 };
 template<class TypeTag>
 struct LocalSolveApproach<TypeTag, TTag::FlowModelParameters> {

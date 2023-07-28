@@ -71,7 +71,7 @@ public:
 
     /// True if the well is a producer.
     bool isProducer() const;
-
+    
     /// Well cells.
     const std::vector<int>& cells() const { return well_cells_; }
 

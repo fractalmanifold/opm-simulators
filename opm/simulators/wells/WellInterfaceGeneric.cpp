@@ -145,19 +145,7 @@ void WellInterfaceGeneric::adaptRatesForVFP(std::vector<double>& rates) const
 }
 
 double WellInterfaceGeneric::wellIndex(const int perf) const {
-    KerasModel model;
-    model.LoadModel(ml_wi_filename_);
-    Tensor in{1};
-    const Evaluation Sw = 1.0;
-    in.data_ = {Sw};
-    // Run prediction.
-    Tensor out;
-    model.Apply(&in, &out);
-    std::cout << out.data_[0].value() << std::endl;
-    const auto& connection = well_ecl_.getConnections()[perf];
-    std::cout << connection.re() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh() << std::endl;
-    return connection.CF();
-    //return this->wellIndex(perf);
+    return well_index_[perf];
 }
 
 const std::vector<PerforationData>& WellInterfaceGeneric::perforationData() const

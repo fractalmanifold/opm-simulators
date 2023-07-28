@@ -31,6 +31,8 @@
 #include <opm/simulators/wells/WellBhpThpCalculator.hpp>
 #include <opm/simulators/wells/WellConvergence.hpp>
 
+#include <opm/ml/keras_model.hpp>
+
 #include <fmt/format.h>
 
 #include <algorithm>
@@ -270,7 +272,34 @@ namespace Opm
                 total_mob_dense += mob[componentIdx];
             }
 
-            // injection perforations total volume rates
+            // Use well index from ML 
+            if (!Base::ml_wi_filename_.empty()) {
+                Value WI;
+                if (allow_cf) {
+                    OPM_DEFLOG_THROW(std::runtime_error,
+                             fmt::format("ML well index only implemented with no cross flow. Well {}", name()),
+                             deferred_logger); 
+                }
+                if constexpr (std::is_same_v<Value, EvalWell>) {
+                    WI = this->extendEval(wellIndexEval(perf, Base::restrictEval(pressure)));
+                } else {
+                    WI = wellIndexEval(perf, pressure);
+                }
+                auto injectorType = this->well_ecl_.injectorType();
+                if (injectorType == InjectorType::WATER) {
+                    const unsigned waterCompIdx = Indices::canonicalToActiveComponentIndex(FluidSystem::waterCompIdx);
+                    //cq_s[waterCompIdx] = - WI * (total_mob_dense * drawdown) * b_perfcells_dense[waterCompIdx];
+                    cq_s[waterCompIdx] = - WI *  drawdown;
+                    std::cout << cq_s[waterCompIdx] << " " << - Tw * (total_mob_dense * drawdown)*b_perfcells_dense[waterCompIdx] << " " << cmix_s[waterCompIdx] << " " << b_perfcells_dense[waterCompIdx] << " " << total_mob_dense << std::endl;
+                    std::cout << WI << " " << (Tw*total_mob_dense*b_perfcells_dense[waterCompIdx]) << std::endl;
+                }
+                else if (injectorType == InjectorType::GAS) {
+                    const unsigned gasCompIdx = Indices::canonicalToActiveComponentIndex(FluidSystem::gasCompIdx);
+                    //cq_s[gasCompIdx] = - WI * (total_mob_dense * drawdown) * b_perfcells_dense[gasCompIdx];
+                    cq_s[gasCompIdx] = - WI *  drawdown;
+                }
+            } else {
+
             const Value cqt_i = - Tw * (total_mob_dense * drawdown);
 
             // compute volume ratio between connection at standard conditions
@@ -309,6 +338,7 @@ namespace Opm
             Value cqt_is = cqt_i / volumeRatio;
             for (int componentIdx = 0; componentIdx < this->numComponents(); ++componentIdx) {
                 cq_s[componentIdx] = cmix_s[componentIdx] * cqt_is;
+            }
             }
 
             // calculating the perforation solution gas rate and solution oil rates
@@ -2492,5 +2522,52 @@ namespace Opm
         const Value tmp_gas =  d > 0.0? (cmix_s[gasCompIdx] - rs * cmix_s[oilCompIdx]) / d : cmix_s[gasCompIdx];
         volumeRatio += tmp_gas / b_perfcells_dense[gasCompIdx];
     }
+
+    template<typename TypeTag>
+    template<class Value>
+    Value
+    StandardWell<TypeTag>::wellIndexEval(const int perf, const Value& pressure) const {
+        KerasModel<Value> model;
+        model.LoadModel(Base::ml_wi_filename_);
+        const auto& connection = Base::well_ecl_.getConnections()[perf];
+
+/*      Tensor<Value> in{4};
+        const auto K = Base::scaleFunction(connection.Kh()/connection.connectionLength(), 1e-13, 1e-11);
+        const auto h = Base::scaleFunction(connection.connectionLength(), 1, 20);
+        const auto re = Base::scaleFunction(connection.r0(), 10, 300);
+        const auto rw = connection.rw();
+        in.data_ = {{h, K, re, rw}}; */
+        // Run prediction.
+
+        // give number of input paramters
+        Tensor<Value> in{1};
+        //const double factorC = 9.869233E-16;
+        //const auto K = Value(scaleFunction( (connection.Kh()/connection.connectionLength())/factorC, 101.325, 10132.5));
+        const auto re = Value(scaleFunction(connection.r0(), 5.25, 99.75));
+        
+        // note order need to be the same as under traning
+        in.data_ = {{re}};
+        Tensor<Value> out;
+        model.Apply(&in, &out);
+        //std::cout << connection.r0() << std::endl;
+        //std::cout << "STW: " << getValue(out.data_[0]) << " " << Base::unscaleFunction(getValue(out.data_[0]), 7.590059798619928e-14, 2.576671100717379e-10) <<  " " << connection.CF() << std::endl;
+        //std::cout << "STW: " << getValue(out.data_[0]) << " " << Base::unscaleFunction(getValue(out.data_[0]), 169.04807973745054, 74740.29429339527) <<  " " << connection.CF() << std::endl;;
+        return unscaleFunction(out.data_[0],2.126127596274671e-10, 5.355465843778001e-10);
+        //return Base::wellIndex(perf);
+    }
+
+    template<typename TypeTag>
+    template<class Value>
+    Value
+    StandardWell<TypeTag>::scaleFunction(Value X, double min, double max) const {
+    return (X - min) / (max - min);
+}
+
+    template<typename TypeTag>
+    template<class Value>
+    Value
+    StandardWell<TypeTag>::unscaleFunction(Value X, double min, double max) const {
+    return X * (max - min) + min;
+}
 
 } // namespace Opm

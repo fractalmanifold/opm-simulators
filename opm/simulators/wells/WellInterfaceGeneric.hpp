@@ -71,7 +71,7 @@ public:
 
     /// True if the well is a producer.
     bool isProducer() const;
-
+    
     /// Well cells.
     const std::vector<int>& cells() const { return well_cells_; }
 
@@ -241,6 +241,10 @@ protected:
     void checkNegativeWellPotentials(std::vector<double>& well_potentials,
                                      const bool checkOperability,
                                      DeferredLogger& deferred_logger);
+
+    double scaleFunction(double X, double min, double max) const;
+    double unscaleFunction(double X, double min, double max) const;
+
 
     // definition of the struct OperabilityStatus
     struct OperabilityStatus {

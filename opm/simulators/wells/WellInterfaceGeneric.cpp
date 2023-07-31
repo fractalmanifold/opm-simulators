@@ -150,23 +150,38 @@ double WellInterfaceGeneric::wellIndex(const int perf) const {
     Tensor in{4};
     const auto& connection = well_ecl_.getConnections()[perf];
 
-    const Evaluation K = connection.Kh()/connection.connectionLength();
-    const Evaluation h = connection.connectionLength();
-    const Evaluation re = connection.re();
+    const Evaluation K = scaleFunction(connection.Kh()/connection.connectionLength(), 1e-13, 1e-11);
+    const Evaluation h = scaleFunction(connection.connectionLength(), 1, 20);
+    const Evaluation re = scaleFunction(connection.r0(), 10, 300);
     const Evaluation rw = connection.rw();
+    std::cout << re << " " << rw << " " << h << " " << K << " " << std::endl;
+    std::cout << connection.r0() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh()/connection.connectionLength() << std::endl;
+
+    const double angle = 6.2831853071795864769252867665590057683943387987502116419498;
+
+    const auto wi = connection.Kh()*angle/log(connection.r0()/connection.rw());
+    //std::cout << wi << std::endl;
     in.data_ = {{h, K, re, rw}};
     // Run prediction.
     Tensor out;
     model.Apply(&in, &out);
-    out.Print();
+    //out.Print();
     std::cout << out.data_.size() << std::endl;
     //for (int i = 0; i < 4; ++i) {
     //    std::cout << out.data_[i].value() << std::endl;
     //}
-    //std::cout << connection.re() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh()/connection.connectionLength() << std::endl;
-    std::cout << out.data_[0].value() <<  " " << connection.CF() << std::endl;;
+    //std::cout << unscaleFunction(scaleFunction(10, 1, 100), 1, 100) << std::endl;
+    std::cout << wi << " " << out.data_[0].value() << " " << unscaleFunction(out.data_[0].value(), 7.590059798619928e-14, 2.576671100717379e-10) <<  " " << connection.CF() << std::endl;;
     return connection.CF();
     //return this->wellIndex(perf);
+}
+
+double WellInterfaceGeneric::scaleFunction(double X, double min, double max) const {
+    return (X - min) / (max - min);
+}
+
+double WellInterfaceGeneric::unscaleFunction(double X, double min, double max) const {
+    return X * (max - min) + min;
 }
 
 const std::vector<PerforationData>& WellInterfaceGeneric::perforationData() const

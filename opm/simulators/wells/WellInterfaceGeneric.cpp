@@ -145,15 +145,18 @@ void WellInterfaceGeneric::adaptRatesForVFP(std::vector<double>& rates) const
 }
 
 double WellInterfaceGeneric::wellIndex(const int perf) const {
-    KerasModel model;
+
+    typedef Opm::DenseAd::Evaluation<double, 3> Evaluation;
+
+    KerasModel<Evaluation > model;
     model.LoadModel(ml_wi_filename_);
-    Tensor in{4};
+    Tensor<Evaluation> in{4};
     const auto& connection = well_ecl_.getConnections()[perf];
 
-    const Evaluation K = scaleFunction(connection.Kh()/connection.connectionLength(), 1e-13, 1e-11);
-    const Evaluation h = scaleFunction(connection.connectionLength(), 1, 20);
-    const Evaluation re = scaleFunction(connection.r0(), 10, 300);
-    const Evaluation rw = connection.rw();
+    const auto K = scaleFunction(connection.Kh()/connection.connectionLength(), 1e-13, 1e-11);
+    const auto h = scaleFunction(connection.connectionLength(), 1, 20);
+    const auto re = scaleFunction(connection.r0(), 10, 300);
+    const auto rw = connection.rw();
     std::cout << re << " " << rw << " " << h << " " << K << " " << std::endl;
     std::cout << connection.r0() << " " << connection.rw() << " " << connection.connectionLength() << " " << connection.Kh()/connection.connectionLength() << std::endl;
 
@@ -163,7 +166,7 @@ double WellInterfaceGeneric::wellIndex(const int perf) const {
     //std::cout << wi << std::endl;
     in.data_ = {{h, K, re, rw}};
     // Run prediction.
-    Tensor out;
+    Tensor<Evaluation> out;
     model.Apply(&in, &out);
     //out.Print();
     std::cout << out.data_.size() << std::endl;
@@ -171,7 +174,7 @@ double WellInterfaceGeneric::wellIndex(const int perf) const {
     //    std::cout << out.data_[i].value() << std::endl;
     //}
     //std::cout << unscaleFunction(scaleFunction(10, 1, 100), 1, 100) << std::endl;
-    std::cout << wi << " " << out.data_[0].value() << " " << unscaleFunction(out.data_[0].value(), 7.590059798619928e-14, 2.576671100717379e-10) <<  " " << connection.CF() << std::endl;;
+    // std::cout << wi << " " << out.data_[0]<< " " << unscaleFunction(out.data_[0], 7.590059798619928e-14, 2.576671100717379e-10) <<  " " << connection.CF() << std::endl;;
     return connection.CF();
     //return this->wellIndex(perf);
 }

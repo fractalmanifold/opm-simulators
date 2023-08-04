@@ -2543,7 +2543,7 @@ namespace Opm
         Tensor<Value> in{1};
         //const double factorC = 9.869233E-16;
         //const auto K = Value(scaleFunction( (connection.Kh()/connection.connectionLength())/factorC, 101.325, 10132.5));
-        const auto re = Value(scaleFunction(connection.r0(), 5.25, 99.75));
+        const auto re = Value(scaleFunction(connection.r0(), 1.0750000000000002, 99.975));
         
         // note order need to be the same as under traning
         in.data_ = {{re}};
@@ -2552,7 +2552,7 @@ namespace Opm
         //std::cout << connection.r0() << std::endl;
         //std::cout << "STW: " << getValue(out.data_[0]) << " " << Base::unscaleFunction(getValue(out.data_[0]), 7.590059798619928e-14, 2.576671100717379e-10) <<  " " << connection.CF() << std::endl;
         //std::cout << "STW: " << getValue(out.data_[0]) << " " << Base::unscaleFunction(getValue(out.data_[0]), 169.04807973745054, 74740.29429339527) <<  " " << connection.CF() << std::endl;;
-        return unscaleFunction(out.data_[0],2.126127596274671e-10, 5.355465843778001e-10);
+        return unscaleFunction(out.data_[0],1.2940719095964813e-09, 2.90327593376701e-09);
         //return Base::wellIndex(perf);
     }
 

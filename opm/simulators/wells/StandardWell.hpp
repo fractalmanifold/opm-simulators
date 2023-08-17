@@ -280,6 +280,7 @@ namespace Opm
                              const double Tw,
                              const int perf,
                              const bool allow_cf,
+                             const double elapsed_time,
                              std::vector<Value>& cq_s,
                              PerforationRates& perf_rates,
                              DeferredLogger& deferred_logger) const;
@@ -298,6 +299,7 @@ namespace Opm
                              const bool allow_cf,
                              const Value& skin_pressure,
                              const std::vector<Value>& cmix_s,
+                             const double elapsed_time,
                              std::vector<Value>& cq_s,
                              PerforationRates& perf_rates,
                              DeferredLogger& deferred_logger) const;
@@ -440,7 +442,7 @@ namespace Opm
                                                       const SummaryState& summary_state,
                                                       DeferredLogger& deferred_logger) const;
         template <class Value>
-        Value wellIndexEval(const int perf, const Value& pressure) const;
+        Value wellIndexEval(const int perf, const double elapsed_time, const Value& pressure) const;
 
     private:
 
